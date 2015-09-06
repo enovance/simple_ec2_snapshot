@@ -1,5 +1,5 @@
-Simple EC2 Snapshot
-===================
+EC2 Snapshot
+============
 
 Simple solution to backup ec2 instances using snapshots
 
@@ -16,9 +16,9 @@ With Simple EC2 Snapshot supports:
 
 ## Installation
 
-To install the tool, the simplest solution is to use pip:
+To install the tool, the est solution is to use pip:
 ```
-pip install simplec2snap
+pip install ec2snap
 ```
 
 ## Filters
@@ -27,17 +27,17 @@ You can first decide to choose what to backup with Instance ID or Tags. You can 
 
 For example, if I want to snapshot 2 instances in the same command line, it should looks like this:
 ```
-> ./simplec2snap.py -i i-ad0fcc4b -i i-56489db2
+> ./ec2snap.py -i i-ad0fcc4b -i i-56489db2
 ```
 
 To snapshot multiple instances by selecting multiple tags. Here is an example with 2 tagsi, so it should match both:
 ```
-> ./simplec2snap.py -t Name 'instance*' -t env prod
+> ./ec2snap.py -t Name 'instance*' -t env prod
 ```
 
 If you want to add an instance in addition of the previous tags:
 ```
-> ./simplec2snap.py -t Name 'instance*' -t env prod -i i-ad0fcc4b
+> ./ec2snap.py -t Name 'instance*' -t env prod -i i-ad0fcc4b
 ```
 
 ## Credentials file
@@ -60,7 +60,7 @@ The default one should be located in '~/.aws_cred'. You can override this with '
 
 Use the dry run mode (enabled by default) to see what actions will be performed when selecting a tag Name or an instance:
 ```
-> ./simplec2snap.py -t Name "instance-name*"
+> ./ec2snap.py -t Name "instance-name*"
 2015-01-26 17:05:25,954 [INFO] == Launching dry run mode ==
 2015-01-26 17:05:25,954 [INFO] Connecting to AWS
 2015-01-26 17:05:25,955 [INFO] Getting instances information
@@ -76,7 +76,7 @@ Use the dry run mode (enabled by default) to see what actions will be performed 
 
 If you're ok with the previous dry run, then add '-u' for run mode:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -u
+> ./ec2snap.py -t Name "instance-name*" -u
 2015-01-26 17:06:19,163 [INFO] == Launching run mode ==
 2015-01-26 17:06:19,163 [INFO] Connecting to AWS
 2015-01-26 17:06:19,163 [INFO] Getting instances information
@@ -94,7 +94,7 @@ By default Hot mode is selected to perform snapshot without stopping instances. 
 
 To do so, you have to add '-H' option:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -u -H
+> ./ec2snap.py -t Name "instance-name*" -u -H
 2015-01-26 17:07:10,281 [INFO] == Launching run mode ==
 2015-01-26 17:07:10,281 [INFO] Connecting to AWS
 2015-01-26 17:07:10,282 [INFO] Getting instances information
@@ -118,7 +118,7 @@ To do so, you have to add '-H' option:
 
 In auto-scaling groups, you normally have x time the same running intance. Snapshoting a huge number of time the same instance may not be very interesting. That's why you can limit the number of snapshot by using '-l' command followed by the number of desired snapshot. If I only want one:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -l 1 
+> ./ec2snap.py -t Name "instance-name*" -l 1 
 2015-01-26 17:11:27,561 [INFO] == Launching dry run mode ==
 2015-01-26 17:11:27,561 [INFO] Connecting to AWS
 2015-01-26 17:11:27,562 [INFO] Getting instances information
@@ -134,7 +134,7 @@ In auto-scaling groups, you normally have x time the same running intance. Snaps
 Still for auto-scaling groups, your root device may not be required to snapshot. Generally because it may be builded from a configuration manager and you just don't care of it. So the goal is to remove it from the snapshot list, you can so use '-o' option:
 
 ```
-> ./simplec2snap.py -t Name "instance-name*" -o  
+> ./ec2snap.py -t Name "instance-name*" -o  
 2015-01-26 17:11:50,757 [INFO] == Launching dry run mode ==
 2015-01-26 17:11:50,757 [INFO] Connecting to AWS
 2015-01-26 17:11:50,758 [INFO] Getting instances information
@@ -159,7 +159,7 @@ So for example, if you want to keep snapshots for 3 weeks and delete the old one
 
 Here is a basic example where I want to delete snapshots older than 10 days:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -n -g 10 d
+> ./ec2snap.py -t Name "instance-name*" -n -g 10 d
 2015-01-28 10:12:11,216 [INFO] == Launching dry run mode ==
 2015-01-28 10:12:11,217 [INFO] Connecting to AWS
 2015-01-28 10:12:11,217 [INFO] Getting instances information
@@ -173,7 +173,7 @@ Here is a basic example where I want to delete snapshots older than 10 days:
 
 Here -n is used to not make snapshots, only delete olds. But you can ask on the same line to make snapshots AND remove old ones:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -g 10 m   
+> ./ec2snap.py -t Name "instance-name*" -g 10 m   
 2015-01-26 17:22:43,263 [INFO] == Launching dry run mode ==
 2015-01-26 17:22:43,263 [INFO] Connecting to AWS
 2015-01-26 17:22:43,264 [INFO] Getting instances information
@@ -193,7 +193,7 @@ Here -n is used to not make snapshots, only delete olds. But you can ask on the 
 
 Another solution to manage the retention of your snapshots is to specify how many snapshots you want to keep. For example, if I have 5 snapshots per device of an instance and want to keep the last 4 ones:
 ```
-> ./simplec2snap.py -t Name "instance-name*" -n -d 4
+> ./ec2snap.py -t Name "instance-name*" -n -d 4
 2015-01-28 10:14:02,713 [INFO] == Launching dry run mode ==
 2015-01-28 10:14:02,713 [INFO] Connecting to AWS
 2015-01-28 10:14:02,713 [INFO] Getting instances information
@@ -209,8 +209,8 @@ Another solution to manage the retention of your snapshots is to specify how man
 
 Here is the help with the complete list of options:
 ```
-> ./simplec2snap.py 
-usage: simplec2snap.py [-h] [-r REGION] [-k KEY_ID] [-a ACCESS_KEY]
+> ./ec2snap.py 
+usage: ec2snap.py [-h] [-r REGION] [-k KEY_ID] [-a ACCESS_KEY]
                        [-c CREDENTIALS] [-p CRED_PROFILE] [-i INSTANCE_ID]
                        [-t ARG ARG] [-u] [-l LIMIT] [-H] [-m COLDSNAP_TIMEOUT]
                        [-o] [-g ARG ARG] [-d KEEP_LAST_SNAPSHOTS] [-n]

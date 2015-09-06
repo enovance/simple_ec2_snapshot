@@ -6,6 +6,7 @@
 #
 # Contributors:
 #   Hugo Rosnet <hugo.rosnet@enovance.com>
+#   Julien Syx  <julien.syx@gmail.com>
 #
 # Dependencies:
 # - python boto
@@ -23,7 +24,7 @@ import datetime
 import logging
 from collections import OrderedDict
 
-__version__ = 'v0.4'
+__version__ = 'v0.5.1'
 
 LVL = {'INFO': logging.INFO,
        'DEBUG': logging.DEBUG,
