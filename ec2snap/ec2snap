@@ -128,7 +128,7 @@ class ManageSnapshot:
     """
 
     def __init__(self, region, key_id, access_key, instance_list, tags,
-                 dry_run, timeout, cold_snap, limit, no_root_device,
+                 dry_run, timeout, cold_snap, limit, no_root_device, add_tags,
                  max_age, no_snap, keep_last_snapshots, logger=__name__):
         """
         :param region: EC2 region
@@ -180,6 +180,10 @@ class ManageSnapshot:
         self._access_key = access_key
         self._instance_list = instance_list
         self._tags = tags
+        # receive ["key1:value1", "key2:value2"], transform it to: {key1: value1, key2: value2}
+        self._add_tags = {}
+        if len(add_tags) > 0:
+            self._add_tags = {elem.split(':')[0]: elem.split(':')[1] for elem in add_tags[0]}
         self._dry_run = dry_run
         self._timeout = timeout
         self._cold_snap = cold_snap
@@ -353,10 +357,12 @@ class ManageSnapshot:
             if self._dry_run is False:
                 try:
                     snap_id = self._conn.create_snapshot(vol, snap_name)
-                    snap_id.add_tags({'type': stype,
-                                      'volume': vol,
-                                      'device': device,
-                                      'instance name': iid.name})
+                    tags_objects = self._conn.get_all_tags(filters={'resource_id': vol})
+                    current_tags = {tag.name: tag.value for tag in tags_objects}
+                    if bool(current_tags) is False:
+                        current_tags = {'type': stype, 'volume': vol, 'device': device, 'instance name': iid.name}
+                    tag_list = dict(current_tags, **self._add_tags)
+                    snap_id.add_tags(tag_list)
                 except Exception as e:
                     self.logger.critical("%s snapshot failed for %s(%s) [%s]" %
                                          (stype, vol, device, e))
@@ -576,6 +582,9 @@ def main():
     parser.add_argument('-t', '--tags', action='append', type=str,
                         default=[], metavar='ARG', nargs=2,
                         help='Select tags with values (ex: tagname value)')
+    parser.add_argument('-e', '--add_tags', action='append', type=str,
+                        default=[], metavar='ARG', nargs='*',
+                        help='Tags added to snapshots (ex: tag1:value1 ...')
 
     parser.add_argument('-u', '--dry_run', action='store_false', default=True,
                         help='Define if it should make snapshot or just \
@@ -647,6 +656,12 @@ def main():
             print("Don't have permission to read credentials file")
             sys.exit(1)
 
+    if arg.add_tags is not None and len(arg.add_tags) > 0:
+        for elem in arg.add_tags[0]:
+            if elem.find(':') == -1:
+                print("Tag '%s' has wrong format, missing separator ':'" % elem)
+                sys.exit(1)
+
     # Exit if no instance or tag has been set
     if arg.instance is None and arg.tags is None:
         print('Please set at least instance ID or tag with value')
@@ -657,8 +672,8 @@ def main():
                                             arg.access_key, arg.instance,
                                             arg.tags, arg.dry_run, arg.timeout,
                                             arg.cold_snap, arg.limit,
-                                            arg.no_root_device, arg.max_age,
-                                            arg.no_snap,
+                                            arg.no_root_device, arg.add_tags,
+                                            arg.max_age, arg.no_snap,
                                             arg.keep_last_snapshots)
         # Calculate max snapshot age
         if len(arg.max_age) > 0:
